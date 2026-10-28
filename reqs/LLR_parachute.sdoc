@@ -1,0 +1,89 @@
+[DOCUMENT]
+TITLE: Parachute Safety Function - Low-Level Requirements (LLR)
+
+[TEXT]
+STATEMENT: >>>
+Low-level requirements for sw/airborne/modules/safety/parachute.c. Each LLR traces to a
+parent HLR and is verified by requirements-based tests in test/test_parachute.c.
+Unless stated otherwise, the periodic function is periodic_parachute().
+<<<
+
+[REQUIREMENT]
+UID: LLR-001
+TITLE: Initialization values
+STATEMENT: >>>
+init_parachute() shall set parachute.arming_method to AUTO, parachute.armed to false and parachute.deploy to false.
+<<<
+RELATIONS:
+- TYPE: Parent
+  VALUE: HLR-001
+
+[REQUIREMENT]
+UID: LLR-002
+TITLE: Arming method OFF
+STATEMENT: >>>
+When parachute.arming_method is OFF, the periodic function shall set parachute.armed to false.
+<<<
+RELATIONS:
+- TYPE: Parent
+  VALUE: HLR-002
+
+[REQUIREMENT]
+UID: LLR-003
+TITLE: Arming method ON
+STATEMENT: >>>
+When parachute.arming_method is ON, the periodic function shall set parachute.armed to true.
+<<<
+RELATIONS:
+- TYPE: Parent
+  VALUE: HLR-002
+
+[REQUIREMENT]
+UID: LLR-004
+TITLE: AGL low-altitude sample counter
+STATEMENT: >>>
+When parachute.arming_method is AUTO, the periodic function shall increment the AGL sample counter by 1 if agl_dist_valid is true and agl_dist_value_filtered is strictly less than 6.0 m; otherwise it shall reset the counter to 0.
+<<<
+RELATIONS:
+- TYPE: Parent
+  VALUE: HLR-004
+
+[REQUIREMENT]
+UID: LLR-005
+TITLE: Close-to-ground flag and counter saturation
+STATEMENT: >>>
+When the AGL sample counter is strictly greater than 10, the function shall set close_to_ground to true and hold the counter at 11; otherwise it shall set close_to_ground to false.
+<<<
+RELATIONS:
+- TYPE: Parent
+  VALUE: HLR-004
+
+[REQUIREMENT]
+UID: LLR-006
+TITLE: Automatic arming decision
+STATEMENT: >>>
+When parachute.arming_method is AUTO, the function shall set parachute.armed to true if and only if autopilot.mode is not AP_MODE_RATE_DIRECT, AND the ENU altitude z is strictly greater than 30.0 m, AND close_to_ground is false.
+<<<
+RELATIONS:
+- TYPE: Parent
+  VALUE: HLR-003
+
+[REQUIREMENT]
+UID: LLR-007
+TITLE: Trigger evaluation only when armed
+STATEMENT: >>>
+After the arming evaluation, the periodic function shall evaluate the deployment condition (LLR-008) only if parachute.armed is true. If parachute.armed is false, parachute.deploy shall keep its previous value.
+<<<
+RELATIONS:
+- TYPE: Parent
+  VALUE: HLR-005
+
+[REQUIREMENT]
+UID: LLR-008
+TITLE: Deployment decision
+STATEMENT: >>>
+When evaluated, the deployment condition shall set parachute.deploy to true if the absolute roll angle (fabsf(phi)) is strictly greater than 55 degrees, OR the absolute pitch angle (fabsf(theta)) is strictly greater than 55 degrees, OR autopilot.mode is AP_MODE_KILL; otherwise it shall set parachute.deploy to false.
+<<<
+RELATIONS:
+- TYPE: Parent
+  VALUE: HLR-005

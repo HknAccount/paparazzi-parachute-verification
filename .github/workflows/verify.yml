@@ -1,0 +1,39 @@
+name: verify
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch Paparazzi at the verified baseline commit
+        run: |
+          git init ../paparazzi
+          git -C ../paparazzi remote add origin https://github.com/paparazzi/paparazzi.git
+          git -C ../paparazzi fetch --depth 1 origin 64176905c3cbdf592a13a9c2dd08f9c121b9d235
+          git -C ../paparazzi checkout FETCH_HEAD
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-14
+          pip install gcovr==8.8 strictdoc==0.30.4
+
+      - name: Tests, MC/DC coverage, traceability, requirements
+        run: make all
+
+      - name: Upload verification evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: verification-evidence
+          path: build/

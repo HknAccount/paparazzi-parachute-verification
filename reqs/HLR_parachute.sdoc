@@ -1,0 +1,50 @@
+[DOCUMENT]
+TITLE: Parachute Safety Function - High-Level Requirements (HLR)
+
+[TEXT]
+STATEMENT: >>>
+High-level requirements for the automatic parachute deployment function of the
+Paparazzi UAV rotorcraft autopilot (sw/airborne/modules/safety/parachute.c).
+
+The source code was written without published requirements. These requirements were
+reverse-engineered from the code and its comments, as a portfolio exercise in
+DO-178C-style verification. They describe what the code does, not a certified design.
+<<<
+
+[REQUIREMENT]
+UID: HLR-001
+TITLE: Initial state
+STATEMENT: >>>
+At initialization, the parachute function shall select automatic arming, and shall be neither armed nor deployed.
+<<<
+
+[REQUIREMENT]
+UID: HLR-002
+TITLE: Arming method override
+STATEMENT: >>>
+The parachute function shall support three arming methods: OFF (never armed), ON (always armed) and AUTO (armed according to the flight condition).
+<<<
+
+[REQUIREMENT]
+UID: HLR-003
+TITLE: Automatic arming condition
+STATEMENT: >>>
+In AUTO arming method, the parachute shall be armed only when the autopilot is not in RATE_DIRECT mode, the aircraft is higher than 30 m, and the aircraft is not close to the ground as measured by the AGL distance sensor.
+<<<
+RATIONALE: >>>
+Prevents deployment during manual rate flying and close to the ground, where a parachute cannot open in time.
+<<<
+
+[REQUIREMENT]
+UID: HLR-004
+TITLE: Close-to-ground detection
+STATEMENT: >>>
+The aircraft shall be considered close to the ground when the AGL sensor has reported a valid filtered distance below 6 m for more than 10 consecutive cycles.
+<<<
+
+[REQUIREMENT]
+UID: HLR-005
+TITLE: Deployment condition
+STATEMENT: >>>
+When armed, the parachute shall be deployed if the roll angle or the pitch angle exceeds 55 degrees in magnitude, or if the autopilot is in KILL mode.
+<<<
